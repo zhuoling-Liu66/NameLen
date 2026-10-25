@@ -1,0 +1,12 @@
+.gradle/
+build/
+out/
+.idea/
+*.iml
+tools/
+.namelens-cache/
+*.zip
+
+sdk-download.log
+idea-plugin/.intellijPlatform/
+.zcode/

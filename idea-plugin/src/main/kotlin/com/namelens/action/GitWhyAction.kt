@@ -108,35 +108,43 @@ class GitWhyAction : AnAction() {
 
     private fun render(o: JsonObject, fromCache: Boolean): String {
         val b = StringBuilder()
-        b.append("<b><font size=\"4\" color=\"#1a4fa0\">").append(Htmls.esc(Jsons.str(o, "summary"))).append("</font></b><br>")
+        b.append("<b><font size=\"4\" color=\"").append(Htmls.headingColor()).append("\">")
+            .append(Htmls.esc(Jsons.str(o, "summary"))).append("</font></b><br>")
 
-        b.append("<br>").append(Htmls.section("git 事实")).append("<br>")
+        // 推断在前（用户最关心"为什么"），git 事实作为核对材料放最后
+        b.append("<br>").append(Htmls.section("为什么这样写（LLM 推断）")).append("<br>")
+        val inf = Jsons.arr(o, "inference")
+        if (inf.size() == 0) {
+            b.append(Htmls.muted("（无）")).append("<br>")
+        } else {
+            b.append("<ul>")
+            for (el in inf) {
+                val i = el.asJsonObject
+                val conf = Jsons.str(i, "confidence")
+                val basis = Jsons.str(i, "basis")
+                b.append("<li><font color=\"").append(Htmls.confColor(conf)).append("\"><b>[").append(Htmls.esc(conf))
+                    .append("]</b></font> ").append(Htmls.esc(Jsons.str(i, "guess")))
+                if (basis.isNotBlank()) b.append(" ").append(Htmls.muted("（" + Htmls.esc(basis) + "）"))
+                b.append("</li>")
+            }
+            b.append("</ul>")
+            b.append(Htmls.muted("把握程度说明：[高] 有提交记录等明确依据 · [中] 有间接依据 · [低] 主要凭命名/惯例的猜测"))
+                .append("<br>")
+        }
+
+        b.append("<br>").append(Htmls.section("git 事实（可核对）")).append("<br>")
         val facts = Jsons.arr(o, "facts")
-        if (facts.size() == 0) b.append("<font color=\"#6b778c\">（无）</font><br>") else {
+        if (facts.size() == 0) {
+            b.append(Htmls.muted("（无）")).append("<br>")
+        } else {
             b.append("<ul>")
             for (el in facts) b.append("<li>").append(Htmls.esc(el.asJsonPrimitive.asString)).append("</li>")
             b.append("</ul>")
         }
 
-        b.append(Htmls.section("为什么这样写（LLM 推断）")).append("<br>")
-        val inf = Jsons.arr(o, "inference")
-        if (inf.size() == 0) b.append("<font color=\"#6b778c\">（无）</font><br>") else {
-            b.append("<ul>")
-            for (el in inf) {
-                val i = el.asJsonObject
-                val conf = Jsons.str(i, "confidence")
-                val color = when (conf) { "高" -> "#006644"; "中" -> "#ff991f"; else -> "#ff5630" }
-                val basis = Jsons.str(i, "basis")
-                b.append("<li><font color=\"").append(color).append("\"><b>[").append(Htmls.esc(conf))
-                    .append("]</b></font> ").append(Htmls.esc(Jsons.str(i, "guess")))
-                if (basis.isNotBlank()) b.append(" <font color=\"#6b778c\">（").append(Htmls.esc(basis)).append("）</font>")
-                b.append("</li>")
-            }
-            b.append("</ul>")
-        }
-
-        b.append("<br><font size=\"2\" color=\"#6b778c\">事实来自 git 输出；推断来自 LLM，请自行甄别")
-        if (fromCache) b.append(" <font color=\"#006644\">[缓存]</font>")
+        b.append("<br><font size=\"2\" color=\"").append(Htmls.mutedColor())
+            .append("\">事实来自 git 输出；推断来自 LLM，请自行甄别")
+        if (fromCache) b.append(" <font color=\"").append(Htmls.confColor("高")).append("\">[缓存]</font>")
         b.append("</font>")
         return Htmls.doc(b.toString())
     }

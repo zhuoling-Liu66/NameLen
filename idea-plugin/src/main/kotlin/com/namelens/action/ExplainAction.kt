@@ -133,13 +133,14 @@ class ExplainAction : AnAction() {
 
     private fun render(d: ExplainData, o: JsonObject, fromCache: Boolean): String {
         val b = StringBuilder()
-        b.append("<b><font size=\"4\" color=\"#1a4fa0\">").append(Htmls.esc(d.methodName)).append("</font></b><br>")
-        b.append("<font color=\"#42526E\">").append(Htmls.esc(Jsons.str(o, "purpose"))).append("</font><br>")
+        b.append("<b><font size=\"4\" color=\"").append(Htmls.headingColor()).append("\">")
+            .append(Htmls.esc(d.methodName)).append("</font></b><br>")
+        b.append(Htmls.esc(Jsons.str(o, "purpose"))).append("<br>")
 
         b.append("<br>").append(Htmls.section("命名拆解")).append("<br>")
         val words = Jsons.arr(o, "nameWords")
         if (words.size() == 0) {
-            b.append("<font color=\"#6b778c\">（无）</font><br>")
+            b.append(Htmls.muted("（无）")).append("<br>")
         } else {
             for (el in words) {
                 val w = el.asJsonObject
@@ -176,13 +177,13 @@ class ExplainAction : AnAction() {
             b.append("<br>").append(Htmls.section("备注")).append("<br>").append(Htmls.esc(notes)).append("<br>")
         }
 
-        b.append("<br><font size=\"2\" color=\"#6b778c\">来源: ")
+        b.append("<br><font size=\"2\" color=\"").append(Htmls.mutedColor()).append("\">来源: ")
         if (d.locationLink != null) {
             b.append("<a href='").append(d.locationLink).append("'>").append(Htmls.esc(d.locationText)).append("</a>")
         } else {
             b.append(Htmls.esc(d.locationText))
         }
-        if (fromCache) b.append(" <font color=\"#006644\">[缓存]</font>")
+        if (fromCache) b.append(" <font color=\"").append(Htmls.confColor("高")).append("\">[缓存]</font>")
         b.append("</font>")
         return Htmls.doc(b.toString())
     }

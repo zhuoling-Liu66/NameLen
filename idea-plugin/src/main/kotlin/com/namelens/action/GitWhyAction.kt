@@ -108,36 +108,36 @@ class GitWhyAction : AnAction() {
 
     private fun render(o: JsonObject, fromCache: Boolean): String {
         val b = StringBuilder()
-        b.append("<div class='title'>").append(Htmls.esc(Jsons.str(o, "summary"))).append("</div>")
+        b.append("<b><font size=\"4\" color=\"#1a4fa0\">").append(Htmls.esc(Jsons.str(o, "summary"))).append("</font></b><br>")
 
-        b.append("<div class='sec'>git 事实</div>")
+        b.append("<br>").append(Htmls.section("git 事实")).append("<br>")
         val facts = Jsons.arr(o, "facts")
-        if (facts.size() == 0) b.append("<div class='muted'>（无）</div>") else {
+        if (facts.size() == 0) b.append("<font color=\"#6b778c\">（无）</font><br>") else {
             b.append("<ul>")
             for (el in facts) b.append("<li>").append(Htmls.esc(el.asJsonPrimitive.asString)).append("</li>")
             b.append("</ul>")
         }
 
-        b.append("<div class='sec'>为什么这样写（LLM 推断）</div>")
+        b.append(Htmls.section("为什么这样写（LLM 推断）")).append("<br>")
         val inf = Jsons.arr(o, "inference")
-        if (inf.size() == 0) b.append("<div class='muted'>（无）</div>") else {
+        if (inf.size() == 0) b.append("<font color=\"#6b778c\">（无）</font><br>") else {
             b.append("<ul>")
             for (el in inf) {
                 val i = el.asJsonObject
                 val conf = Jsons.str(i, "confidence")
-                val cls = when (conf) { "高" -> "hi"; "中" -> "mid"; else -> "lo" }
+                val color = when (conf) { "高" -> "#006644"; "中" -> "#ff991f"; else -> "#ff5630" }
                 val basis = Jsons.str(i, "basis")
-                b.append("<li><span class='").append(cls).append("'>[").append(Htmls.esc(conf)).append("]</span> ")
-                    .append(Htmls.esc(Jsons.str(i, "guess")))
-                if (basis.isNotBlank()) b.append(" <span class='muted'>（").append(Htmls.esc(basis)).append("）</span>")
+                b.append("<li><font color=\"").append(color).append("\"><b>[").append(Htmls.esc(conf))
+                    .append("]</b></font> ").append(Htmls.esc(Jsons.str(i, "guess")))
+                if (basis.isNotBlank()) b.append(" <font color=\"#6b778c\">（").append(Htmls.esc(basis)).append("）</font>")
                 b.append("</li>")
             }
             b.append("</ul>")
         }
 
-        b.append("<div class='src'>事实来自 git 输出；推断来自 LLM，请自行甄别")
-        if (fromCache) b.append(" <span class='badge'>缓存</span>")
-        b.append("</div>")
+        b.append("<br><font size=\"2\" color=\"#6b778c\">事实来自 git 输出；推断来自 LLM，请自行甄别")
+        if (fromCache) b.append(" <font color=\"#006644\">[缓存]</font>")
+        b.append("</font>")
         return Htmls.doc(b.toString())
     }
 

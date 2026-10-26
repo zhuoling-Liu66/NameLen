@@ -1,21 +1,21 @@
 package com.namelens.util
 
+/**
+ * 卡片 HTML 渲染。
+ *
+ * 重要约束：不用 <style> 块、不用 style= 内联属性、不用任何 CSS3 属性。
+ * Swing 的 CSS 解析器（CSSParser/StyleSheet.addCSSAttribute）在 IDEA 进程内对
+ * 某些声明会抛 NPE（CSS$CssValue conv==null，2025.1.3/JBR21 实测，命令行无法复现），
+ * 因此卡片只用 HTML3 基础标签（b/i/font/table/ul/ol/li/a/code/br/hr），
+ * 彻底绕开 CSS 解析路径。
+ */
 object Htmls {
 
-    private const val CSS = "body{font-family:'Microsoft YaHei',sans-serif;font-size:13px;color:#172B4D;margin:10px;}" +
-        ".title{font-size:16px;font-weight:bold;color:#1a4fa0;margin-bottom:4px;}" +
-        ".purpose{color:#42526E;margin-bottom:8px;}" +
-        ".sec{font-weight:bold;color:#505F79;margin:8px 0 4px;border-left:3px solid #4c9aff;padding-left:6px;}" +
-        "table{border-collapse:collapse;margin:2px 0;}" +
-        "td,th{border:1px solid #dfe1e6;padding:3px 8px;text-align:left;}" +
-        "td.w{font-family:Consolas,monospace;font-weight:bold;white-space:nowrap;}" +
-        "ol,ul{margin:4px 0;padding-left:22px;}" +
-        ".src{margin-top:10px;color:#6b778c;font-size:12px;}" +
-        ".badge{background:#e3fcef;color:#006644;border-radius:3px;padding:1px 4px;font-size:11px;}" +
-        ".muted{color:#6b778c;}" +
-        ".hi{color:#006644;font-weight:bold;}.mid{color:#ff991f;font-weight:bold;}.lo{color:#ff5630;font-weight:bold;}"
+    fun doc(bodyHtml: String): String = "<html><body>$bodyHtml</body></html>"
 
-    fun doc(bodyHtml: String): String = "<html><head><style>$CSS</style></head><body>$bodyHtml</body></html>"
+    /** 区块标题（用字符模拟左侧色条） */
+    fun section(title: String): String =
+        "<b><font color=\"#505F79\">▎$title</font></b>"
 
     fun esc(s: String?): String {
         if (s == null) return ""
@@ -34,8 +34,8 @@ object Htmls {
     /** LLM 未按约定 JSON 输出时的兜底：原文展示，不缓存 */
     fun wrapRaw(text: String): String {
         val b = StringBuilder()
-        b.append("<div class='sec'>模型输出（未按 JSON 约定，原文展示）</div>")
-        b.append("<pre style='white-space:pre-wrap'>").append(esc(text)).append("</pre>")
+        b.append(section("模型输出（未按 JSON 约定，原文展示）")).append("<br>")
+        b.append("<pre>").append(esc(text)).append("</pre>")
         return doc(b.toString())
     }
 }

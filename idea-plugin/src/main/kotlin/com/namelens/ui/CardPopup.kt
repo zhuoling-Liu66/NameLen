@@ -13,8 +13,10 @@ import java.awt.Dimension
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.file.Path
+import javax.swing.JComponent
 import javax.swing.JEditorPane
 import javax.swing.JScrollPane
+import javax.swing.JTextArea
 import javax.swing.event.HyperlinkEvent
 
 /** 解释卡片的统一展示：HTML Popup + 来源链接点击跳转到定义处 */
@@ -30,10 +32,20 @@ object CardPopup {
         ApplicationManager.getApplication().invokeLater {
             if (project.isDisposed || editor.isDisposed) return@invokeLater
             val caret = editor.caretModel.currentCaret
-            val pane = JEditorPane("text/html; charset=UTF-8", html)
-            pane.isEditable = false
-            pane.addHyperlinkListener { e ->
-                if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) navigate(project, e.description)
+            // Swing 的 HTML 引擎只支持 CSS2 且对未知属性直接 NPE，解析失败时退化为纯文本卡片
+            val pane: JComponent = try {
+                JEditorPane("text/html; charset=UTF-8", html).apply {
+                    isEditable = false
+                    addHyperlinkListener { e ->
+                        if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) navigate(project, e.description)
+                    }
+                }
+            } catch (t: Throwable) {
+                JTextArea(html.replace(Regex("<[^>]*>"), "")).apply {
+                    isEditable = false
+                    lineWrap = true
+                    wrapStyleWord = true
+                }
             }
             val scroller = JScrollPane(pane)
             scroller.preferredSize = Dimension(700, 500)

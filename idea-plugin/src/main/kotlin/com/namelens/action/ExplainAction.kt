@@ -133,61 +133,57 @@ class ExplainAction : AnAction() {
 
     private fun render(d: ExplainData, o: JsonObject, fromCache: Boolean): String {
         val b = StringBuilder()
-        b.append("<div class='title'>").append(Htmls.esc(d.methodName)).append("</div>")
-        b.append("<div class='purpose'>").append(Htmls.esc(Jsons.str(o, "purpose"))).append("</div>")
+        b.append("<b><font size=\"4\" color=\"#1a4fa0\">").append(Htmls.esc(d.methodName)).append("</font></b><br>")
+        b.append("<font color=\"#42526E\">").append(Htmls.esc(Jsons.str(o, "purpose"))).append("</font><br>")
 
-        b.append("<div class='sec'>命名拆解</div>")
+        b.append("<br>").append(Htmls.section("命名拆解")).append("<br>")
         val words = Jsons.arr(o, "nameWords")
         if (words.size() == 0) {
-            b.append("<div class='muted'>（无）</div>")
+            b.append("<font color=\"#6b778c\">（无）</font><br>")
         } else {
-            b.append("<table>")
             for (el in words) {
                 val w = el.asJsonObject
-                b.append("<tr><td class='w'>").append(Htmls.esc(Jsons.str(w, "word")))
-                    .append("</td><td>").append(Htmls.esc(Jsons.str(w, "meaning"))).append("</td></tr>")
+                b.append("<code><b>").append(Htmls.esc(Jsons.str(w, "word")))
+                    .append("</b></code>  ").append(Htmls.esc(Jsons.str(w, "meaning"))).append("<br>")
             }
-            b.append("</table>")
         }
 
-        b.append("<div class='sec'>入参</div>")
+        b.append("<br>").append(Htmls.section("入参")).append("<br>")
         val params = Jsons.arr(o, "params")
         if (params.size() == 0) {
-            b.append("<div class='muted'>无参数</div>")
+            b.append("无参数<br>")
         } else {
-            b.append("<table>")
             for (el in params) {
                 val p = el.asJsonObject
-                b.append("<tr><td class='w'>").append(Htmls.esc(Jsons.str(p, "name")))
-                    .append("</td><td>").append(Htmls.esc(Jsons.str(p, "type")))
-                    .append("</td><td>").append(Htmls.esc(Jsons.str(p, "meaning"))).append("</td></tr>")
+                b.append("<code><b>").append(Htmls.esc(Jsons.str(p, "name"))).append("</b></code>")
+                    .append(" <i>").append(Htmls.esc(Jsons.str(p, "type"))).append("</i>  ")
+                    .append(Htmls.esc(Jsons.str(p, "meaning"))).append("<br>")
             }
-            b.append("</table>")
         }
 
-        b.append("<div class='sec'>返回值</div>")
-        b.append("<div>").append(Htmls.esc(Jsons.str(o, "returns")).ifBlank { "（无说明）" }).append("</div>")
+        b.append("<br>").append(Htmls.section("返回值")).append("<br>")
+        b.append(Htmls.esc(Jsons.str(o, "returns")).ifBlank { "（无说明）" }).append("<br>")
 
         val steps = Jsons.arr(o, "steps")
         if (steps.size() > 0) {
-            b.append("<div class='sec'>实现要点</div><ol>")
+            b.append("<br>").append(Htmls.section("实现要点")).append("<ol>")
             for (el in steps) b.append("<li>").append(Htmls.esc(el.asJsonPrimitive.asString)).append("</li>")
             b.append("</ol>")
         }
 
         val notes = Jsons.str(o, "notes")
         if (notes.isNotBlank()) {
-            b.append("<div class='sec'>备注</div><div>").append(Htmls.esc(notes)).append("</div>")
+            b.append("<br>").append(Htmls.section("备注")).append("<br>").append(Htmls.esc(notes)).append("<br>")
         }
 
-        b.append("<div class='src'>来源: ")
+        b.append("<br><font size=\"2\" color=\"#6b778c\">来源: ")
         if (d.locationLink != null) {
             b.append("<a href='").append(d.locationLink).append("'>").append(Htmls.esc(d.locationText)).append("</a>")
         } else {
             b.append(Htmls.esc(d.locationText))
         }
-        if (fromCache) b.append(" <span class='badge'>缓存</span>")
-        b.append("</div>")
+        if (fromCache) b.append(" <font color=\"#006644\">[缓存]</font>")
+        b.append("</font>")
         return Htmls.doc(b.toString())
     }
 

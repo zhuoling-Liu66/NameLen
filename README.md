@@ -95,7 +95,7 @@ public UserPrincipal resolveUserPrincipal(String token)
 ## 自己构建
 
 ```bash
-git clone https://github.com/zhuoling-Liu66/namelens.git
+git clone https://github.com/zhuoling-Liu66/NameLen.git
 cd namelens/idea-plugin
 ./gradlew buildPlugin
 # 产物: build/distributions/namelens-idea-plugin-x.y.z.zip
@@ -108,7 +108,7 @@ cd namelens/idea-plugin
 ## 项目结构
 
 ```
-namelens/
+NameLen/
 ├── idea-plugin/          # IDEA 插件源码（Kotlin）
 │   └── src/main/kotlin/com/namelens/
 │       ├── action/       # 4 个功能入口

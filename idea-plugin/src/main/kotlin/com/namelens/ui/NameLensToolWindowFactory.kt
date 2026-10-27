@@ -2,6 +2,7 @@ package com.namelens.ui
 
 import com.google.gson.JsonParser
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -25,10 +26,16 @@ import javax.swing.table.TableRowSorter
 
 class NameLensToolWindowFactory : ToolWindowFactory {
 
+    private val log = Logger.getInstance("NameLens")
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val panel = GlossaryPanel(project)
-        val content = ContentFactory.getInstance().createContent(panel, "术语表", false)
-        toolWindow.contentManager.addContent(content)
+        try {
+            val panel = GlossaryPanel(project)
+            val content = ContentFactory.getInstance().createContent(panel, "术语表", false)
+            toolWindow.contentManager.addContent(content)
+        } catch (ex: Exception) {
+            log.error("tool window init failed", ex)
+        }
         // "链路图" 内容由 FlowDiagramAction 在生成时动态添加
     }
 }

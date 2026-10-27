@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
@@ -45,6 +46,8 @@ import javax.swing.ListSelectionModel
  */
 class FlowDiagramAction : AnAction() {
 
+    private val log = Logger.getInstance("NameLens")
+
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabled = e.project != null
     }
@@ -55,6 +58,7 @@ class FlowDiagramAction : AnAction() {
             NameLensNotifications.warn(project, "NameLens", "IDE 正在建立索引，请等索引完成后再生成链路图")
             return
         }
+        log.info("flow-diagram: action triggered, project=${project.name}")
 
         object : Task.Backgroundable(project, "NameLens 正在生成请求链路图 ...", true) {
             override fun run(indicator: ProgressIndicator) {
@@ -63,12 +67,14 @@ class FlowDiagramAction : AnAction() {
                     indicator.text = "扫描 Spring 组件 ..."
                     val graph = ReadAction.compute<FlowGraph?, RuntimeException> { SpringScanner.scan(project, indicator) }
                     if (graph == null) {
+                        log.info("flow-diagram: scan finished but no Spring components found")
                         NameLensNotifications.warn(
                             project, "NameLens",
                             "未识别出 Spring 组件（Controller/Filter/Interceptor/Service 均未发现）。可能不是 Spring 项目，或依赖未导入。"
                         )
                         return
                     }
+                    log.info("flow-diagram: scan ok, nodes=${graph.allNodes().size}, extras=${graph.extras}")
 
                     val cache = NameLensCache.getInstance(project)
                     val settings = NameLensSettings.getInstance()
@@ -117,7 +123,8 @@ class FlowDiagramAction : AnAction() {
                         }
                     }
                 } catch (ex: Exception) {
-                    NameLensNotifications.error(project, "NameLens 链路图失败", ex.message ?: ex.toString())
+                    log.error("flow-diagram failed", ex)
+                    NameLensNotifications.error(project, "NameLens 链路图失败", (ex.message ?: ex.toString()) + "（详见 idea.log）")
                 }
             }
         }.queue()

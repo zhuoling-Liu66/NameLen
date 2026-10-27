@@ -25,7 +25,7 @@
                     anchor="right"
                     factoryClass="com.namelens.ui.NameLensToolWindowFactory"
                     canCloseContents="true"/>
-        <notificationGroup id="NameLens" displayType="BALLOON"/>
+        <notificationGroup id="NameLens" displayType="STICKY_BALLOON"/>
     </extensions>
 
     <actions>
